@@ -41,7 +41,7 @@ export function contractToZohoRecord(
 ) {
   return {
     Name: ct.vertragsnummer,
-    Kunde: { id: contactZohoId },
+    Kontakt: { id: contactZohoId },
     Produkt: ct.produkt || undefined,
     Versicherer: ct.versicherer || undefined,
     Beginn: ct.beginn ?? undefined,

@@ -97,7 +97,7 @@ not a sales pipeline stage — so it gets its own module. Fields:
 | Field (API name) | Type | Notes |
 |---|---|---|
 | `Name` | Single Line (the module's primary field) | holds the contract number; labelled "Vertragsnummer" in the Zoho UI. Zoho enforces primary-field uniqueness, which is what drives upsert idempotency. |
-| `Kunde` | **Lookup → Contacts** | see §2.4 |
+| `Kontakt` | **Lookup → Contacts** | see §2.4 |
 | `Produkt` | Single Line | e.g. "Berufsunfähigkeit" |
 | `Versicherer` | Single Line | e.g. "Nürnberger" |
 | `Beginn` | Date | |
@@ -115,7 +115,7 @@ in `.env` lets you point at a differently-named module without touching code.
 
 ### 2.4 Linking contracts to customers
 
-`Vertraege.Kunde` is a genuine **Lookup field to Contacts**, not a copied
+`Vertraege.Kontakt` is a genuine **Lookup field to Contacts**, not a copied
 name — set once, on import, using the Zoho record ID returned when the
 matching contact was created/updated (`src/lib/zoho/mappings.ts`,
 `contractToZohoRecord`). Because it's a real lookup, opening a customer in
@@ -208,7 +208,7 @@ state immediately.
 `/contracts` (`src/app/contracts/page.tsx` + `src/app/api/contracts/route.ts`):
 
 - Lists every contract with the linked customer's name, email and phone
-  (resolved via the `Kunde` lookup's Zoho ID, batch-fetched from `Contacts`).
+  (resolved via the `Kontakt` lookup's Zoho ID, batch-fetched from `Contacts`).
 - Filters by **Makler** (dropdown, derived from what's actually in the data)
   and by **expiry window** (30 / 90 / 180 days / all), combinable.
 - Urgency is colour-coded by days-to-expiry (red ≤30d, amber ≤90d, yellow

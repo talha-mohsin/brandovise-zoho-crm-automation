@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { parseImportData } from "@/lib/csv/parse";
 import { readSampleCsvs } from "@/lib/csv/sample";
 import { env } from "@/lib/env";
-import { upsertRecords, ZohoApiError } from "@/lib/zoho/client";
+import { searchRecords, upsertRecords, ZohoApiError } from "@/lib/zoho/client";
 import { contractToZohoRecord, customerToZohoContact } from "@/lib/zoho/mappings";
 
 export const runtime = "nodejs";
@@ -45,6 +45,9 @@ export async function POST(req: Request) {
 
     zohoContactResults.forEach((result, i) => {
       const customer = parsed.customers[i];
+      // Zoho echoes back details.id for a successful upsert regardless of
+      // whether it took the "insert" or "update" branch, so both cases are
+      // captured the same way here.
       if (result.status === "success" && result.details?.id) {
         kundennummerToContactId.set(customer.kundennummer, String(result.details.id));
         customerResults.push({
@@ -60,7 +63,23 @@ export async function POST(req: Request) {
       }
     });
 
-    // --- Contracts, linked via the Kunde lookup. --------------------------
+    // Belt-and-braces: if a contact's Zoho ID wasn't captured from the
+    // upsert response (e.g. Zoho reported success without echoing an id),
+    // look it up directly by Kundennummer before giving up on linking its
+    // contracts. Only done for customer numbers a contract actually needs.
+    const neededKundennummern = new Set(parsed.contracts.map((c) => c.kundennummer));
+    for (const kundennummer of neededKundennummern) {
+      if (kundennummerToContactId.has(kundennummer)) continue;
+      const matches = await searchRecords<{ id: string; Kundennummer?: string }>(
+        "Contacts",
+        `(Kundennummer:equals:${kundennummer})`
+      );
+      if (matches[0]?.id) {
+        kundennummerToContactId.set(kundennummer, matches[0].id);
+      }
+    }
+
+    // --- Contracts, linked via the Kontakt lookup. -------------------------
     const contractResults: CommitItemResult[] = [];
     const contractPayloads: ReturnType<typeof contractToZohoRecord>[] = [];
     const contractsBeingSent: typeof parsed.contracts = [];

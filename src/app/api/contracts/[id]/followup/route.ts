@@ -20,7 +20,7 @@ interface ZohoContractRecord {
   id: string;
   Name?: string;
   Ende?: string;
-  Kunde?: ZohoLookup | null;
+  Kontakt?: ZohoLookup | null;
   Follow_up_Erstellt?: boolean;
   Makler?: string;
 }
@@ -54,17 +54,17 @@ export async function POST(
         { status: 400 }
       );
     }
-    if (!contract.Kunde?.id) {
+    if (!contract.Kontakt?.id) {
       return NextResponse.json(
         { ok: false, error: "Contract is not linked to a customer; cannot schedule a follow-up." },
         { status: 400 }
       );
     }
 
-    const contact = await getRecord<ZohoContactRecord>("Contacts", contract.Kunde.id);
+    const contact = await getRecord<ZohoContactRecord>("Contacts", contract.Kontakt.id);
     const customerLabel = contact
       ? `${contact.Last_Name ?? ""}, ${contact.First_Name ?? ""}`.replace(/^, |, $/g, "")
-      : contract.Kunde.name || "Unknown customer";
+      : contract.Kontakt.name || "Unknown customer";
 
     const maklerName = contract.Makler;
 
@@ -78,7 +78,7 @@ export async function POST(
       Due_Date: dueDate,
       Status: "Not Started",
       Priority: "High",
-      Who_Id: { id: contract.Kunde.id },
+      Who_Id: { id: contract.Kontakt.id },
       What_Id: { id: contract.id },
       $se_module: env.contractModuleApiName,
     };

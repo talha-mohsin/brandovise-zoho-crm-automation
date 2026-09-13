@@ -7,12 +7,20 @@ export const runtime = "nodejs";
 interface ZohoLookup {
   id: string;
   name?: string;
+  // Populated when the record was fetched with dot-notation sub-fields
+  // (e.g. `Kontakt.Email`) — not guaranteed on every Zoho plan/API version,
+  // so callers still fall back to a batch fetch by id when these are absent.
+  First_Name?: string;
+  Last_Name?: string;
+  Email?: string;
+  Phone?: string;
+  Kundennummer?: string;
 }
 
 interface ZohoContractRecord {
   id: string;
   Name?: string;
-  Kunde?: ZohoLookup | null;
+  Kontakt?: ZohoLookup | null;
   Produkt?: string;
   Versicherer?: string;
   Beginn?: string;
@@ -59,7 +67,12 @@ export async function GET() {
       {
         fields: [
           "Name",
-          "Kunde",
+          "Kontakt",
+          "Kontakt.First_Name",
+          "Kontakt.Last_Name",
+          "Kontakt.Email",
+          "Kontakt.Phone",
+          "Kontakt.Kundennummer",
           "Produkt",
           "Versicherer",
           "Beginn",
@@ -75,26 +88,37 @@ export async function GET() {
     );
 
     const contractRecords = contractRes.data ?? [];
-    const contactIds = Array.from(
+
+    // The dot-notation fields above populate Kontakt.First_Name etc. inline
+    // when Zoho supports it; for any contract where they didn't come back,
+    // batch-fetch the linked Contacts so the console never shows a blank
+    // customer for a contract that genuinely has a linked Kontakt.
+    const idsNeedingLookup = Array.from(
       new Set(
         contractRecords
-          .map((c) => c.Kunde?.id)
-          .filter((id): id is string => Boolean(id))
+          .filter((c) => c.Kontakt?.id && !c.Kontakt.First_Name && !c.Kontakt.Last_Name)
+          .map((c) => c.Kontakt!.id)
       )
     );
 
-    const contacts = await getRecordsByIds<ZohoContactRecord>(
+    const fetchedContacts = await getRecordsByIds<ZohoContactRecord>(
       "Contacts",
-      contactIds,
+      idsNeedingLookup,
       ["First_Name", "Last_Name", "Email", "Phone"]
     );
-    const contactsById = new Map(contacts.map((c) => [c.id, c]));
+    const fetchedContactsById = new Map(fetchedContacts.map((c) => [c.id, c]));
 
     const contracts: ConsoleContract[] = contractRecords.map((c) => {
-      const contact = c.Kunde?.id ? contactsById.get(c.Kunde.id) : undefined;
-      const name = contact
-        ? [contact.First_Name, contact.Last_Name].filter(Boolean).join(" ")
-        : c.Kunde?.name || "(unknown customer)";
+      const kontakt = c.Kontakt;
+      const fallback = kontakt?.id ? fetchedContactsById.get(kontakt.id) : undefined;
+      const firstName = kontakt?.First_Name ?? fallback?.First_Name;
+      const lastName = kontakt?.Last_Name ?? fallback?.Last_Name;
+      const email = kontakt?.Email ?? fallback?.Email ?? null;
+      const phone = kontakt?.Phone ?? fallback?.Phone ?? null;
+      const name =
+        [firstName, lastName].filter(Boolean).join(" ") ||
+        kontakt?.name ||
+        "(unknown customer)";
       return {
         id: c.id,
         vertragsnummer: c.Name || "",
@@ -108,10 +132,10 @@ export async function GET() {
         makler: c.Makler || "",
         followUpErstellt: Boolean(c.Follow_up_Erstellt),
         customer: {
-          id: c.Kunde?.id ?? null,
+          id: kontakt?.id ?? null,
           name,
-          email: contact?.Email ?? null,
-          phone: contact?.Phone ?? null,
+          email,
+          phone,
         },
       };
     });
