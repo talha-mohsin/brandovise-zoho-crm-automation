@@ -23,11 +23,17 @@ export function customerToZohoContact(c: CustomerRecord) {
 }
 
 /**
- * Contract fields for insert/update. `Follow_up_Erstellt` is deliberately
- * NOT included here: including it in every upsert would reset the flag to
- * its default on every re-import, silently wiping out follow-ups that were
- * already created from the console. It is only ever written by the
- * follow-up endpoint.
+ * Contract fields for insert/update.
+ *
+ * `Vertraege` has no separate "Vertragsnummer" custom field — the contract
+ * number *is* the module's primary `Name` field (just labelled
+ * "Vertragsnummer" in the Zoho UI), so that's what upserts are keyed on.
+ * Similarly the expiry date field in this org is `Ende`, not `Ablaufdatum`.
+ *
+ * `Follow_up_Erstellt` is deliberately NOT included here: including it in
+ * every upsert would reset the flag to its default on every re-import,
+ * silently wiping out follow-ups that were already created from the
+ * console. It is only ever written by the follow-up endpoint.
  */
 export function contractToZohoRecord(
   ct: ContractRecord,
@@ -35,12 +41,11 @@ export function contractToZohoRecord(
 ) {
   return {
     Name: ct.vertragsnummer,
-    Vertragsnummer: ct.vertragsnummer,
     Kunde: { id: contactZohoId },
     Produkt: ct.produkt || undefined,
     Versicherer: ct.versicherer || undefined,
     Beginn: ct.beginn ?? undefined,
-    Ablaufdatum: ct.ablaufdatum ?? undefined,
+    Ende: ct.ablaufdatum ?? undefined,
     Jahresbeitrag: ct.jahresbeitrag ?? undefined,
     Zahlweise: ct.zahlweise || undefined,
     Status: ct.status || undefined,

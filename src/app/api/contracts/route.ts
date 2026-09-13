@@ -12,12 +12,11 @@ interface ZohoLookup {
 interface ZohoContractRecord {
   id: string;
   Name?: string;
-  Vertragsnummer?: string;
   Kunde?: ZohoLookup | null;
   Produkt?: string;
   Versicherer?: string;
   Beginn?: string;
-  Ablaufdatum?: string;
+  Ende?: string;
   Jahresbeitrag?: number;
   Zahlweise?: string;
   Status?: string;
@@ -59,12 +58,12 @@ export async function GET() {
       env.contractModuleApiName,
       {
         fields: [
-          "Vertragsnummer",
+          "Name",
           "Kunde",
           "Produkt",
           "Versicherer",
           "Beginn",
-          "Ablaufdatum",
+          "Ende",
           "Jahresbeitrag",
           "Zahlweise",
           "Status",
@@ -98,11 +97,11 @@ export async function GET() {
         : c.Kunde?.name || "(unknown customer)";
       return {
         id: c.id,
-        vertragsnummer: c.Vertragsnummer || c.Name || "",
+        vertragsnummer: c.Name || "",
         produkt: c.Produkt || "",
         versicherer: c.Versicherer || "",
         beginn: c.Beginn ?? null,
-        ablaufdatum: c.Ablaufdatum ?? null,
+        ablaufdatum: c.Ende ?? null,
         jahresbeitrag: c.Jahresbeitrag ?? null,
         zahlweise: c.Zahlweise || "",
         status: c.Status || "",

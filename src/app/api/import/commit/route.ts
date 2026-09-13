@@ -82,7 +82,7 @@ export async function POST(req: Request) {
     const zohoContractResults = await upsertRecords(
       env.contractModuleApiName,
       contractPayloads,
-      ["Vertragsnummer"]
+      ["Name"]
     );
 
     zohoContractResults.forEach((result, i) => {

@@ -18,8 +18,8 @@ interface ZohoLookup {
 
 interface ZohoContractRecord {
   id: string;
-  Vertragsnummer?: string;
-  Ablaufdatum?: string;
+  Name?: string;
+  Ende?: string;
   Kunde?: ZohoLookup | null;
   Follow_up_Erstellt?: boolean;
   Makler?: string;
@@ -48,7 +48,7 @@ export async function POST(
         { status: 404 }
       );
     }
-    if (!contract.Ablaufdatum) {
+    if (!contract.Ende) {
       return NextResponse.json(
         { ok: false, error: "Contract has no expiry date; cannot schedule a follow-up." },
         { status: 400 }
@@ -68,8 +68,8 @@ export async function POST(
 
     const maklerName = contract.Makler;
 
-    const dueDate = subtractDays(contract.Ablaufdatum, 30);
-    const subject = `Renewal call — ${customerLabel} (${contract.Vertragsnummer ?? id})`;
+    const dueDate = subtractDays(contract.Ende, 30);
+    const subject = `Renewal call — ${customerLabel} (${contract.Name ?? id})`;
 
     const owner = maklerName ? await findZohoUserByName(maklerName) : null;
 

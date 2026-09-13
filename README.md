@@ -96,12 +96,12 @@ not a sales pipeline stage — so it gets its own module. Fields:
 
 | Field (API name) | Type | Notes |
 |---|---|---|
-| `Vertragsnummer` | Single Line, **unique** | external key, drives upsert |
+| `Name` | Single Line (the module's primary field) | holds the contract number; labelled "Vertragsnummer" in the Zoho UI. Zoho enforces primary-field uniqueness, which is what drives upsert idempotency. |
 | `Kunde` | **Lookup → Contacts** | see §2.4 |
 | `Produkt` | Single Line | e.g. "Berufsunfähigkeit" |
 | `Versicherer` | Single Line | e.g. "Nürnberger" |
 | `Beginn` | Date | |
-| `Ablaufdatum` | Date | drives the console's urgency sort |
+| `Ende` | Date | expiry date; drives the console's urgency sort |
 | `Jahresbeitrag` | Currency | parsed from German `1.234,56` format |
 | `Zahlweise` | Single Line | jährlich/halbjährlich/vierteljährlich/monatlich |
 | `Status` | Single Line | Aktiv/Gekündigt/In Bearbeitung |
@@ -152,7 +152,8 @@ outside of this table.
 
 **Zoho's native upsert** (`POST /crm/{v}/{module}/upsert` with
 `duplicate_check_fields`) is used for both modules, keyed on `Kundennummer`
-for `Contacts` and `Vertragsnummer` for `Vertraege`
+for `Contacts` and `Name` (the contract number, labelled "Vertragsnummer" in
+the Zoho UI — see §2.3) for `Vertraege`
 (`src/lib/zoho/client.ts::upsertRecords`). Zoho matches on that field
 server-side and turns a repeat import into an **update**, not a second
 insert — this is enforced by Zoho itself, not by client-side "have I seen
