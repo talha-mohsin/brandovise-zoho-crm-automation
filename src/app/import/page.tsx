@@ -135,30 +135,30 @@ export default function ImportPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
-      <h1 className="text-xl font-semibold">Import customers &amp; contracts</h1>
-      <p className="mt-1 text-sm text-neutral-600">
+      <h1 className="text-xl font-semibold text-slate-900">Import customers &amp; contracts</h1>
+      <p className="mt-1 text-sm text-slate-600">
         Nothing is written to Zoho until you review the preview and confirm.
       </p>
 
-      <section className="mt-6 rounded-lg border border-neutral-200 bg-white p-5">
-        <h2 className="text-sm font-medium text-neutral-900">1. Choose your data</h2>
+      <section className="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-sm font-medium text-slate-900">1. Choose your data</h2>
         <div className="mt-3 grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-medium text-neutral-500">kontakte_export.csv</label>
+            <label className="block text-xs font-medium text-slate-500">kontakte_export.csv</label>
             <input
               type="file"
               accept=".csv"
               onChange={(e) => setKontakteFile(e.target.files?.[0] ?? null)}
-              className="mt-1 block w-full text-sm"
+              className="mt-1 block w-full rounded-md border border-slate-200 bg-white text-sm text-slate-700 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-neutral-500">vertraege_export.csv</label>
+            <label className="block text-xs font-medium text-slate-500">vertraege_export.csv</label>
             <input
               type="file"
               accept=".csv"
               onChange={(e) => setVertraegeFile(e.target.files?.[0] ?? null)}
-              className="mt-1 block w-full text-sm"
+              className="mt-1 block w-full rounded-md border border-slate-200 bg-white text-sm text-slate-700 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
             />
           </div>
         </div>
@@ -166,25 +166,29 @@ export default function ImportPage() {
           <button
             onClick={() => runPreview(false)}
             disabled={loading}
-            className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-700 disabled:opacity-50"
+            className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-500 disabled:opacity-50"
           >
             Preview uploaded files
           </button>
           <button
             onClick={() => runPreview(true)}
             disabled={loading}
-            className="rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium hover:bg-neutral-100 disabled:opacity-50"
+            className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-100 disabled:opacity-50"
           >
             Or use the sample files from the repo
           </button>
         </div>
-        {loading && <p className="mt-3 text-sm text-neutral-500">Reading and validating…</p>}
-        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+        {loading && <p className="mt-3 text-sm text-slate-500">Reading and validating…</p>}
+        {error && (
+          <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </p>
+        )}
       </section>
 
       {preview && (
-        <section className="mt-6 rounded-lg border border-neutral-200 bg-white p-5">
-          <h2 className="text-sm font-medium text-neutral-900">2. Preview</h2>
+        <section className="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-sm font-medium text-slate-900">2. Preview</h2>
           <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Stat label="Customers read" value={preview.counts.customersRead} />
             <Stat label="Customers to import" value={preview.counts.customersToImport} />
@@ -199,18 +203,20 @@ export default function ImportPage() {
             <IssueList title={`Worth a look, imported anyway (${warnings.length})`} issues={warnings} tone="warning" />
           )}
           {errors.length === 0 && warnings.length === 0 && (
-            <p className="mt-4 text-sm text-green-700">No data problems found.</p>
+            <p className="mt-4 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
+              No data problems found.
+            </p>
           )}
 
           <div className="mt-5">
             <button
               onClick={runCommit}
               disabled={committing}
-              className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 disabled:opacity-50"
+              className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-emerald-500 disabled:opacity-50"
             >
               {committing ? "Writing to Zoho…" : "Confirm & import into Zoho"}
             </button>
-            <p className="mt-2 text-xs text-neutral-500">
+            <p className="mt-2 text-xs text-slate-500">
               Records are matched on Kundennummer / Vertragsnummer, so running this again updates
               existing records instead of duplicating them.
             </p>
@@ -219,8 +225,8 @@ export default function ImportPage() {
       )}
 
       {result && (
-        <section className="mt-6 rounded-lg border border-neutral-200 bg-white p-5">
-          <h2 className="text-sm font-medium text-neutral-900">3. Result</h2>
+        <section className="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-sm font-medium text-slate-900">3. Result</h2>
           <ResultTable title="Customers" items={result.customers} />
           <ResultTable title="Contracts" items={result.contracts} />
           {result.skippedDuringValidation.length > 0 && (
@@ -234,9 +240,9 @@ export default function ImportPage() {
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-md bg-neutral-50 p-3">
-      <div className="text-lg font-semibold">{value}</div>
-      <div className="text-xs text-neutral-500">{label}</div>
+    <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
+      <div className="text-lg font-semibold text-slate-900">{value}</div>
+      <div className="text-xs text-slate-500">{label}</div>
     </div>
   );
 }
@@ -256,7 +262,7 @@ function IssueList({
       : "border-amber-200 bg-amber-50 text-amber-800";
   return (
     <div className="mt-4">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{title}</h3>
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</h3>
       <ul className="mt-2 space-y-2">
         {issues.map((issue, i) => (
           <li key={i} className={`rounded-md border px-3 py-2 text-sm ${toneClasses}`}>
@@ -272,22 +278,22 @@ function ResultTable({ title, items }: { title: string; items: CommitItemResult[
   const badge: Record<CommitItemResult["action"], string> = {
     created: "bg-green-100 text-green-800",
     updated: "bg-blue-100 text-blue-800",
-    skipped: "bg-neutral-200 text-neutral-700",
+    skipped: "bg-slate-200 text-slate-700",
     failed: "bg-red-100 text-red-800",
   };
   return (
     <div className="mt-4">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
         {title} ({items.length})
       </h3>
       <ul className="mt-2 max-h-64 space-y-1 overflow-y-auto text-sm">
         {items.map((item, i) => (
-          <li key={i} className="flex items-center gap-2">
+          <li key={i} className="flex items-center gap-2 text-slate-700">
             <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${badge[item.action]}`}>
               {item.action}
             </span>
             <span className="font-mono text-xs">{item.identifier}</span>
-            {item.reason && <span className="text-xs text-neutral-500">— {item.reason}</span>}
+            {item.reason && <span className="text-xs text-slate-500">— {item.reason}</span>}
           </li>
         ))}
       </ul>
